@@ -3782,7 +3782,7 @@
     </div>
   </footer>
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzg-Q53llDVczjxgsC-dijiOGsRE-x9_QqyH27qclDDD5SxUWuWVvL94YUx-i7byLckGQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzzNOZGSsbCIzc5Tt9ZgJGHwLKYnKWMcUZT6Ba_x2Vlf_jLylI_p2dwK0b0TAfGirotUg/exec";
     // Global variables
     let currentUser = null;
     
@@ -4175,32 +4175,37 @@
     // Save settings
     async function saveSettings() {
       if (!currentUser) return;
-      
+
+      const payload = {
+        action: 'updateProfile',
+        user_id: currentUser.id,  // Use snake_case
+        name: document.getElementById('display-name').value,
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        bio: document.getElementById('bio').value,
+        avatar: document.getElementById('avatar-url').value,
+        department: document.getElementById('department').value
+      };
+
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            action: 'updateProfile',
-            user_id: currentUser.id,  // Use snake_case
-            name: document.getElementById('display-name').value,
-            username: document.getElementById('username').value,
-            email: document.getElementById('email').value,
-            bio: document.getElementById('bio').value,
-            avatar: document.getElementById('avatar-url').value,
-            department: document.getElementById('department').value
-          })
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload),
+          mode: 'cors'  // <-- Important!
         });
-        
+
         const data = await response.json();
+
         if (data.success) {
-          // Update local user data
-          currentUser.name = document.getElementById('display-name').value;
-          currentUser.username = document.getElementById('username').value;
-          currentUser.email = document.getElementById('email').value;
-          currentUser.bio = document.getElementById('bio').value;
-          currentUser.avatar = document.getElementById('avatar-url').value;
-          
+          currentUser.name = payload.name;
+          currentUser.username = payload.username;
+          currentUser.email = payload.email;
+          currentUser.bio = payload.bio;
+          currentUser.avatar = payload.avatar;
+
           localStorage.setItem('currentUser', JSON.stringify(currentUser));
           updateProfileData();
           alert('Profile updated successfully!');
@@ -4212,6 +4217,7 @@
         alert('Error updating profile: ' + error.message);
       }
     }
+
     
     // Toggle like on a post
     function toggleLike(button) {
